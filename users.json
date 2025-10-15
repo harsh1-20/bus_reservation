@@ -1,0 +1,237 @@
+{
+    "Stu": {
+        "email": "stutiharshithamandula@gmail.com",
+        "password": "Stuthi@2003",
+        "phone": "6302032289",
+        "created_at": "2025-10-12 18:01:27",
+        "bookings": [
+            {
+                "booking_id": "BK342439",
+                "from_city": "Chennai",
+                "to_city": "Mumbai",
+                "date": "2025-10-16",
+                "passengers": 3,
+                "seats": [
+                    30
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 680.0,
+                "discount": 15,
+                "bus_number": "BUS-6817",
+                "driver_number": "+91-71808-14765",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-12 18:02:51"
+            },
+            {
+                "booking_id": "BK599575",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-12",
+                "passengers": 1,
+                "seats": [
+                    1
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 800,
+                "discount": 0,
+                "bus_number": "BUS-2954",
+                "driver_number": "+91-96783-17620",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-12 18:24:58"
+            },
+            {
+                "booking_id": "BK595518",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-12",
+                "passengers": 1,
+                "seats": [
+                    27
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 680.0,
+                "discount": 15,
+                "bus_number": "BUS-2360",
+                "driver_number": "+91-77729-70145",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-12 23:38:48"
+            },
+            {
+                "booking_id": "BK992674",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-12",
+                "passengers": 3,
+                "seats": [
+                    2,
+                    3,
+                    6
+                ],
+                "bus_type": "Seater",
+                "total_amount": 1440.0,
+                "discount": 20,
+                "bus_number": "BUS-3846",
+                "driver_number": "+91-89822-54348",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-12 23:46:19"
+            },
+            {
+                "booking_id": "BK878605",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-13",
+                "passengers": 1,
+                "seats": [
+                    35
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 800,
+                "discount": 0,
+                "bus_number": "BUS-7150",
+                "driver_number": "+91-89789-39193",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-13 02:32:05"
+            },
+            {
+                "booking_id": "BK426138",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-13",
+                "passengers": 1,
+                "seats": [
+                    3
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 640.0,
+                "discount": 20,
+                "bus_number": "BUS-9772",
+                "driver_number": "+91-73863-69534",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-13 10:26:21"
+            },
+            {
+                "booking_id": "BK340304",
+                "from_city": "Hyderabad",
+                "to_city": "Mumbai",
+                "date": "2025-10-27",
+                "passengers": 3,
+                "seats": [
+                    18
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 640.0,
+                "discount": 20,
+                "bus_number": "BUS-6531",
+                "driver_number": "+91-89483-12332",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-13 11:42:42"
+            }
+        ]
+    },
+    "harsh": {
+        "email": "harshithamandula7@gmail.com",
+        "password": "Stuthi@2003",
+        "phone": "6302032289",
+        "created_at": "2025-10-13 22:39:31",
+        "bookings": [
+            {
+                "booking_id": "BK334053",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-13",
+                "passengers": 4,
+                "seats": [
+                    2,
+                    16,
+                    17
+                ],
+                "bus_type": "Seater",
+                "total_amount": 1350.0,
+                "discount": 25,
+                "bus_number": "BUS-3286",
+                "driver_number": "+91-94132-23434",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-13 22:41:10"
+            }
+        ]
+    },
+    "swaru": {
+        "email": "swaruparanimandula@gmail.com",
+        "password": "Stuthi@2003",
+        "phone": "9912646989",
+        "created_at": "2025-10-13 22:51:30",
+        "bookings": []
+    },
+    "Sarah": {
+        "email": "saraholivia@gmail.com",
+        "password": "Stuthi@2003",
+        "phone": "6302032289",
+        "created_at": "2025-10-14 09:37:39",
+        "bookings": [
+            {
+                "booking_id": "BK334053",
+                "from_city": "Hyderabad",
+                "to_city": "Bangalore",
+                "date": "2025-10-29",
+                "passengers": 3,
+                "seats": [
+                    3,
+                    6,
+                    16
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 1920.0,
+                "discount": 20,
+                "bus_number": "BUS-3286",
+                "driver_number": "+91-94132-23434",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-14 09:40:44"
+            },
+            {
+                "booking_id": "BK133326",
+                "from_city": "Mumbai",
+                "to_city": "Delhi",
+                "date": "2025-10-14",
+                "passengers": 1,
+                "seats": [
+                    15
+                ],
+                "bus_type": "Sleeper",
+                "total_amount": 640.0,
+                "discount": 20,
+                "bus_number": "BUS-1488",
+                "driver_number": "+91-73070-38657",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-14 09:41:53"
+            }
+        ]
+    },
+    "Vinay": {
+        "email": "vinaymandula@gmail.com",
+        "password": "Stuthi@2003",
+        "phone": "6302032289",
+        "created_at": "2025-10-15 12:19:06",
+        "bookings": [
+            {
+                "booking_id": "BK334053",
+                "from_city": "Hyderabad",
+                "to_city": "Jaipur",
+                "date": "2025-10-29",
+                "passengers": 4,
+                "seats": [
+                    3,
+                    16,
+                    17,
+                    18
+                ],
+                "bus_type": "Seater",
+                "total_amount": 1800.0,
+                "discount": 25,
+                "bus_number": "BUS-3286",
+                "driver_number": "+91-94132-23434",
+                "payment_mode": "Cash on Boarding",
+                "booking_time": "2025-10-15 12:20:24"
+            }
+        ]
+    }
+}
