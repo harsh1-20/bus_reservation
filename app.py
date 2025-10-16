@@ -1,5 +1,6 @@
 # app.py
 import streamlit as st
+import base64
 from datetime import datetime, timedelta
 import random
 from utils.auth import signup, login, add_booking, get_user_bookings, get_user_booking_count
@@ -8,7 +9,7 @@ from utils.email_sender import send_confirmation_email
 # Page configuration
 st.set_page_config(
     page_title="ZTravels!",
-    page_icon="C:\\Users\\Mr\\Pictures\\Screenshots\\Screenshot 2025-10-12 184748.png",
+    page_icon="C:\\Users\\dell\\OneDrive\\Documents\\bus_system_original\\logo_web.jpg",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -173,12 +174,20 @@ if 'booked_seats' not in st.session_state:
     # pick about 20% seats as sold -> 30 seats total -> ~6 sold
     st.session_state.booked_seats = set(random.sample(range(1, 31), k=6))
 
+import streamlit as st
+import streamlit.components.v1 as components
+import re, json
 # Diwali discounts (unchanged)
 DIWALI_DISCOUNTS = [
     {"code": "DIWALI25", "discount": 25, "description": "Diwali Special - 25% OFF"},
     {"code": "FESTIVE20", "discount": 20, "description": "Festival Bonanza - 20% OFF"},
     {"code": "LIGHTS15", "discount": 15, "description": "Festival of Lights - 15% OFF"},
 ]
+
+
+def _id(s: str) -> str:
+    # sanitize for use in element ids
+    return re.sub(r'[^a-zA-Z0-9_-]', '_', s)
 
 # Cities
 CITIES = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata",
@@ -237,7 +246,107 @@ def login_page():
                     st.error("Passwords don't match!")
             else:
                 st.warning("Please fill in all fields!")
+image_path="C:\\Users\\dell\\OneDrive\\Documents\\bus_system_original\wave_web.jpg"
+def add_bg_from_local(image_path):
+    try:
+        with open(image_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode()
+            return encoded
+    except Exception:
+        # If image can't be read, return empty string so CSS falls back gracefully
+        return ""
 
+# get encoded string once (prevents NameError)
+encoded = add_bg_from_local(image_path)
+
+# apply CSS; if encoded is empty use a safe fallback background
+if encoded:
+    st.markdown(
+        f"""
+        <style>
+        .header {{
+            text-align: center;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+                url("data:image/png;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            padding: 100px 30px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }}
+
+        .header h1 {{
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }}
+
+        .header p {{
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: #f3f3f3;
+        }}
+
+        .promo {{
+            background: linear-gradient(90deg, #ff8fab, #ffc8dd);
+            color: #2b2b2b;
+            font-weight: 600;
+            border-radius: 10px;
+            text-align: center;
+            padding: 12px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    # fallback CSS if image missing / couldn't be read
+    st.markdown(
+        """
+        <style>
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            border-radius: 20px;
+            padding: 60px 30px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #f3f3f3;
+        }
+
+        .promo {
+            background: linear-gradient(90deg, #ff8fab, #ffc8dd);
+            color: #2b2b2b;
+            font-weight: 600;
+            border-radius: 10px;
+            text-align: center;
+            padding: 12px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 def dashboard():
     """Main Dashboard"""
@@ -251,14 +360,42 @@ def dashboard():
         unsafe_allow_html=True
     )
 
-    # Diwali discount banner
+   # Diwali discount banner
+    # Diwali discount banner with golden hour shimmer ✨
     st.markdown("""
-    <div style="background:linear-gradient(90deg,#f093fb,#f5576c);padding:12px;border-radius:10px;color:white;margin-bottom:12px;">
-        <strong>🎆 DIWALI SPECIAL OFFERS!</strong> Get up to 25% OFF on your bookings!
-    </div>
-    """, unsafe_allow_html=True)
+<style>
+@keyframes glowMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.glow-banner {
+    background: linear-gradient(90deg, #ffcf6f, #ffb88c, #f9a826, #ffd27f);
+    background-size: 300% 300%;
+    animation: glowMove 6s ease-in-out infinite;
+    padding: 14px 18px;
+    border-radius: 12px;
+    color: #3b2f2f;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    margin-bottom: 16px;
+}
+.glow-banner span {
+    font-weight: 500;
+}
+</style>
+
+<div class="glow-banner">
+    <strong>✨ DIWALI GOLDEN HOUR DEALS ✨</strong> 
+    <span>Score up to <b>25% OFF</b> on your next trip — glow & go!</span>
+</div>
+""", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
+
 
     with col1:
         st.markdown("""
@@ -274,7 +411,10 @@ def dashboard():
     with col2:
         bookings = get_user_bookings(st.session_state.username)
         st.markdown(f"""
-        <div style="background:white;padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+        <div style="background:white;
+                    padding:18px;
+                    border-radius:12px;
+                    box-shadow:0 6px 18px rgba(0,0,0,0.06);">
             <h3>🎫 My Bookings</h3>
             <p>Total Bookings: {len(bookings)}</p>
         </div>
@@ -282,7 +422,10 @@ def dashboard():
 
     with col3:
         st.markdown("""
-        <div style="background:white;padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+        <div style="background:white;
+                    padding:18px;
+                    border-radius:12px;
+                    box-shadow:0 6px 18px rgba(0,0,0,0.06);">
             <h3>💰 Offers</h3>
             <p>Check out amazing deals!</p>
         </div>
@@ -310,7 +453,7 @@ def dashboard():
 
 def booking_page():
     """Booking Page with redesigned sleeper two-deck UI (30 seats: 15 lower + 15 upper)"""
-    st.markdown('<div class="header"><h1>🎫 Book Your Bus Ticket</h1></div>', unsafe_allow_html=True)
+    st.markdown('<div class="header"><h1> Book Your Bus Ticket</h1></div>', unsafe_allow_html=True)
 
     # Back button
     if st.button("← Back to Dashboard"):
@@ -354,9 +497,55 @@ def booking_page():
         show_women_seats = st.checkbox("Show Women Seats", value=True, key="show_women")
 
     # Diwali discounts display
-    st.markdown("### 🎆 Available Diwali Discounts")
-    for discount in DIWALI_DISCOUNTS:
-        st.info(f"**{discount['code']}** - {discount['description']}")
+    DIWALI_DISCOUNTS = [
+        {"code": "DIWALI25", "discount": 25, "description": "Diwali Special - 25% OFF"},
+        {"code": "FESTIVE20", "discount": 20, "description": "Festival Bonanza - 20% OFF"},
+        {"code": "LIGHTS15", "discount": 15, "description": "Festival of Lights - 15% OFF"},
+    ]
+    
+    # --- Render coupon codes with a copy button beside each code ---
+    def render_discount_codes(discounts):
+        for d in discounts:
+            code = d["code"]
+            desc = d["description"]
+            btn_id = f"btn_{_id(code)}"
+            # small HTML row: code + description on left, Copy button on right
+            html = f'''
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:#f8fbff;margin-bottom:6px;font-family:inherit">
+              <div style="flex:1;display:flex;align-items:center;gap:12px;">
+                <strong style="color:#0047ab;font-size:16px;">{code}</strong>
+                <span style="color:#333;">{desc}</span>
+              </div>
+              <button id="{btn_id}" style="padding:6px 10px;border-radius:6px;border:none;background:#0047ab;color:#fff;cursor:pointer">
+                Copy
+              </button>
+            </div>
+            <script>
+            (function(){{
+              const btn = document.getElementById("{btn_id}");
+              if(!btn) return;
+              btn.addEventListener('click', function() {{
+                const text = "{code}";
+                if (navigator && navigator.clipboard && navigator.clipboard.writeText) {{
+                  navigator.clipboard.writeText(text).then(function() {{
+                    const orig = btn.textContent;
+                    btn.textContent = '✓ Copied';
+                    btn.disabled = true;
+                    setTimeout(function(){{ btn.textContent = orig; btn.disabled = false; }}, 1500);
+                  }}).catch(function() {{
+                    window.prompt('Copy the code:', text);
+                  }});
+                }} else {{
+                  window.prompt('Copy the code:', text);
+                }}
+              }});
+            }})();
+            </script>
+            '''
+            components.html(html, height=72)
+
+    # call the renderer so codes show up with copy buttons beside them
+    render_discount_codes(DIWALI_DISCOUNTS)
 
     # Seat selection UI
     st.subheader(f"Select Your Seats (Sleeper layout)")
@@ -547,16 +736,25 @@ def booking_page():
 
         # policy box (copied/styled)
         st.markdown("""
-        <div style="background-color:#fff3cd;border-left:5px solid #ffc107;padding:12px;border-radius:6px;">
-            <h4>📋 Cancellation & Refund Policy</h4>
-            <ul>
-                <li><strong>24+ hours before departure:</strong> Full refund</li>
-                <li><strong>12-24 hours before departure:</strong> 75% refund</li>
-                <li><strong>6-12 hours before departure:</strong> 50% refund</li>
-                <li><strong>Less than 6 hours:</strong> No refund</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+    <div style="background: linear-gradient(90deg, #fff7d6, #fff1b8); 
+                border-left: 6px solid #ffd43b; 
+                padding: 18px 22px; 
+                border-radius: 12px; 
+                font-family: 'Poppins', sans-serif; 
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <h4 style="margin-bottom:10px; font-weight:600;">📋 Cancellation & Refund Policy</h4>
+        <ul style="margin:0; padding-left:20px; line-height:1.8; font-size:1.05rem;">
+            <li><strong>⏰ 24+ hrs left:</strong> You’re chill. Get a <b>full refund</b>, no questions asked.</li>
+            <li><strong>🌤 12–24 hrs left:</strong> We’ll send <b>75% back</b> to your account — fair deal 😌</li>
+            <li><strong>🌙 6–12 hrs left:</strong> Cutting it close, but you still get <b>50%</b> back.</li>
+            <li><strong>🚨 Under 6 hrs:</strong> That’s basically takeoff time 😭 — <b>no refund</b> possible.</li>
+        </ul>
+        <p style="margin-top:12px; font-size:0.95rem; color:#444;">
+            💡 Tip: If plans change, cancel early — more refund for you, less stress for us. Win-win 💛
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
         # Confirm / Modify
         colc1, colc2 = st.columns(2)
