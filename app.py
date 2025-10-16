@@ -246,7 +246,7 @@ def login_page():
                     st.error("Passwords don't match!")
             else:
                 st.warning("Please fill in all fields!")
-image_path="C:\\Users\\dell\\OneDrive\\Documents\\bus_system_original\wave_web.jpg"
+image_path="images/wave_web.jpg"
 def add_bg_from_local(image_path):
     try:
         with open(image_path, "rb") as f:
