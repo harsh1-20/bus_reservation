@@ -9,7 +9,7 @@ from utils.email_sender import send_confirmation_email
 # Page configuration
 st.set_page_config(
     page_title="ZTravels!",
-    page_icon="C:\\Users\\dell\\OneDrive\\Documents\\bus_system_original\\logo_web.jpg",
+    page_icon="images/logo_web.jpg",
     layout="wide",
     initial_sidebar_state="expanded"
 )
