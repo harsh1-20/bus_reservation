@@ -1,15 +1,15 @@
 # app.py
 import streamlit as st
-import base64
+import base64     
 from datetime import datetime, timedelta
 import random
-from utils.auth import signup, login, add_booking, get_user_bookings, get_user_booking_count
-from utils.email_sender import send_confirmation_email
+from utils.auth import*
+from utils.email_sender import*
 
 # Page configuration
 st.set_page_config(
     page_title="ZTravels!",
-    page_icon="images/logo_web.jpg",
+    page_icon="C:\\Users\\dell\\OneDrive\\Documents\\bus_system_original\\logo_web.jpg",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -27,12 +27,22 @@ st.markdown("""
     margin-bottom: 18px;
 }
 
-/* Deck container */
+/* Deck container (default desktop layout) */
+.deck-container {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* Each deck card */
 .deck {
     background: #ffffff;
     padding: 14px;
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    flex: 1 1 0;
+    min-width: 0; /* allow flex to shrink */
 }
 
 /* Deck title row */
@@ -122,7 +132,7 @@ st.markdown("""
     box-shadow: 0 8px 18px rgba(11,87,208,0.12);
 }
 
-/* small button under seat - keep streamlit default but tighten spacing */
+/* small button under seat */
 .seat-action {
     margin-top:8px;
 }
@@ -140,13 +150,37 @@ st.markdown("""
     align-items:center;
 }
 
-/* Responsive small screens */
+/* Desktop & larger tablets: keep decks side-by-side (no horizontal scroll) */
+@media (min-width: 701px) {
+    .deck-container { overflow: visible; padding-bottom: 0; }
+    .deck { min-width: 0; }
+}
+
+/* Mobile: place decks horizontally and allow smooth horizontal scroll */
 @media (max-width: 700px) {
-    .seat-wrap { width:70px; }
-    .seat-rect { width:64px; height:88px; font-size:16px; }
+    .deck-container {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        padding: 8px 6px;
+        margin-bottom: 8px;
+    }
+    .deck {
+        flex: 0 0 86%; /* show one deck at a time mostly, allow peeking */
+        min-width: 280px;
+        max-width: 92%;
+        scroll-snap-align: start;
+    }
+    /* reduce vertical padding inside decks to avoid long vertical scroll */
+    .deck { padding: 10px; }
+    .seat-wrap { width:72px; }
+    .seat-rect { width:60px; height:86px; font-size:15px; }
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # Initialize session state
 if 'logged_in' not in st.session_state:
@@ -199,6 +233,59 @@ BUS_TYPES = {
     "Seater": {"seats": 50, "price": 600}
 }
 
+# --- add helper to cancel a user's booking (uses utils.auth load/save if available) ---
+def cancel_user_booking(username: str, booking_id: str):
+    """
+    Remove a booking (cancel) from the stored users file.
+    Returns (success: bool, message: str)
+    """
+    try:
+        auth = __import__('utils.auth', fromlist=['load_users', 'save_users'])
+        load_users = getattr(auth, 'load_users', None)
+        save_users = getattr(auth, 'save_users', None)
+        if not load_users or not save_users:
+            return False, "Cancellation not supported (missing functions)."
+        users = load_users()
+    except Exception:
+        return False, "Unable to access user database."
+
+    if username in users:
+        bookings = users[username].get('bookings', [])
+        for b in list(bookings):  # iterate over copy so we can remove
+            if b.get('booking_id') == booking_id:
+                try:
+                    # remove the booking entirely
+                    users[username]['bookings'].remove(b)
+                    save_users(users)
+                except Exception:
+                    return False, "Failed to save cancellation."
+                # clear any session copy if present
+                if st.session_state.get('booking_details', {}).get('booking_id') == booking_id:
+                    st.session_state.booking_details = {}
+                return True, "Booking cancelled and removed from your bookings."
+    return False, "Booking not found!"
+
+# --- helper: load latest bookings for a user (safe fallback) ---
+def get_latest_user_bookings(username):
+    """
+    Try to load users via utils.auth.load_users() and return the user's bookings list.
+    Fallback to get_user_bookings(username) if load_users isn't available.
+    """
+    try:
+        auth = __import__('utils.auth', fromlist=['load_users'])
+        load_users = getattr(auth, 'load_users', None)
+        if callable(load_users):
+            users = load_users()
+            return users.get(username, {}).get('bookings', [])
+    except Exception:
+        pass
+
+    # fallback if above fails
+    try:
+        return get_user_bookings(username)
+    except Exception:
+        return []
+
 # ---------- Pages (login, dashboard, booking, confirmation) ----------
 def login_page():
     """Login and Signup Page"""
@@ -246,7 +333,7 @@ def login_page():
                     st.error("Passwords don't match!")
             else:
                 st.warning("Please fill in all fields!")
-image_path="images/wave_web.jpg"
+image_path="C:\\Users\\dell\\OneDrive\\Documents\\bus_system_original\\wave_web.jpg"
 def add_bg_from_local(image_path):
     try:
         with open(image_path, "rb") as f:
@@ -399,7 +486,10 @@ def dashboard():
 
     with col1:
         st.markdown("""
-        <div style="background:white;padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+        <div style="background:white;
+                    padding:18px;
+                    border-radius:12px;
+                    box-shadow:0 6px 18px rgba(0,0,0,0.06);">
             <h3>📅 Book Your Journey</h3>
             <p>Find and book your perfect bus ride</p>
         </div>
@@ -431,18 +521,39 @@ def dashboard():
         </div>
         """, unsafe_allow_html=True)
 
+    # replace previous call with fresh loader so canceled bookings reflect immediately
+    bookings = get_latest_user_bookings(st.session_state.username)
+
     # Display user bookings
-    bookings = get_user_bookings(st.session_state.username)
     if bookings:
         st.subheader("Your Recent Bookings")
-        for booking in bookings[-3:]:
-            with st.expander(f"Booking: {booking['from_city']} → {booking['to_city']} ({booking['date']})"):
-                st.write(f"**Booking ID:** {booking['booking_id']}")
-                st.write(f"**Passengers:** {booking['passengers']}")
-                st.write(f"**Seats:** {', '.join(map(str, booking['seats']))}")
-                st.write(f"**Total Amount:** ₹{booking['total_amount']}")
-                st.write(f"**Bus Number:** {booking['bus_number']}")
-                st.write(f"**Driver Contact:** {booking['driver_number']}")
+        for i, booking in enumerate(bookings[-3:]):
+            # skip bookings that are cancelled (in case some entries still have a 'cancel' status)
+            raw_status = str(booking.get('status', '') or '').strip().lower()
+            if 'cancel' in raw_status:
+                continue
+
+            with st.expander(f"Booking: {booking.get('from_city','N/A')} → {booking.get('to_city','N/A')} ({booking.get('date','N/A')})"):
+                st.write(f"**Booking ID:** {booking.get('booking_id','N/A')}")
+                st.write(f"**Passengers:** {booking.get('passengers','N/A')}")
+                st.write(f"**Seats:** {', '.join(map(str, booking.get('seats',[])))}")
+                st.write(f"**Total Amount:** ₹{booking.get('total_amount','N/A')}")
+                st.write(f"**Bus Number:** {booking.get('bus_number','N/A')}")
+                st.write(f"**Driver Contact:** {booking.get('driver_number','N/A')}")
+                st.write(f"**Departure Time:** {booking.get('departure_time', 'N/A')}")
+                # normalize status display
+                status_display = "Confirmed"
+                st.write(f"**Status:** {status_display}")
+                # unique key per booking entry
+                btn_key = f"cancel_{booking.get('booking_id','')}_{i}"
+                if st.button(f"Cancel Booking {booking.get('booking_id','')}", key=btn_key):
+                    success, msg = cancel_user_booking(st.session_state.username, booking.get('booking_id',''))
+                    if success:
+                        st.success(msg)
+                        # refresh to reflect deletion
+                        st.rerun()
+                    else:
+                        st.error(msg)
 
     if st.button("Logout"):
         st.session_state.logged_in = False
@@ -474,16 +585,21 @@ def booking_page():
         to_city = st.selectbox("To", to_cities, key="to_city")
 
     with col3:
-        min_date = datetime.now().date()
-        max_date = min_date + timedelta(days=90)
-        travel_date = st.date_input("Date", min_value=min_date, max_value=max_date, key="travel_date")
+     min_date = datetime.now().date()
+     max_date = min_date + timedelta(days=90)
+     travel_date = st.date_input("Date", min_value=min_date, max_value=max_date, key="travel_date")
 
     with col4:
-        passengers = st.number_input("Number of Passengers", min_value=1, max_value=6, value=1, key="passengers")
-        if passengers > 6:
-            st.error("⚠️ Maximum 6 passengers allowed per booking!")
-            passengers = 6
-
+        # Departure time and passengers on the same line (two sub-columns)
+        tcol, pcol = st.columns([1, 1])
+        with tcol:
+            time_options = [f"{h:02d}:{m:02d}" for h in range(6, 23) for m in (0, 30)]  # 6:00 to 22:30
+            departure_time = st.selectbox("Departure Time", time_options, key="departure_time")
+        with pcol:
+            passengers = st.number_input("Passengers", min_value=1, max_value=6, value=1, key="passengers")
+            if passengers > 6:
+                st.error("⚠️ Maximum 6 passengers allowed per booking!")
+                passengers = 6
     # Bus type selection (price taken from BUS_TYPES)
     st.subheader("Select Bus Type")
     bus_type = st.radio("Bus Type", list(BUS_TYPES.keys()), horizontal=True, key="bus_type")
@@ -666,12 +782,26 @@ def booking_page():
 
     # Two columns for Lower and Upper deck
     deck_col1, spacer_col, deck_col2 = st.columns([1, 0.05, 1])
-
+    st.markdown("""
+<div class="deck-container">
+    <div class="deck">
+""", unsafe_allow_html=True)
     with deck_col1:
         render_deck("Lower deck", LOWER_SEATS)
 
+    st.markdown("""
+    </div>
+    <div class="deck">
+""", unsafe_allow_html=True)
+
     with deck_col2:
         render_deck("Upper deck", UPPER_SEATS)
+
+    st.markdown("""
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 
     # Legend and seat stats
     st.markdown("---")
@@ -734,7 +864,7 @@ def booking_page():
             else:
                 st.write(f"**Final Amount:** ₹{total_amount}")
 
-        # policy box (copied/styled)
+        # policy box 
         st.markdown("""
     <div style="background: linear-gradient(90deg, #fff7d6, #fff1b8); 
                 border-left: 6px solid #ffd43b; 
@@ -746,15 +876,11 @@ def booking_page():
         <ul style="margin:0; padding-left:20px; line-height:1.8; font-size:1.05rem;">
             <li><strong>⏰ 24+ hrs left:</strong> You’re chill. Get a <b>full refund</b>, no questions asked.</li>
             <li><strong>🌤 12–24 hrs left:</strong> We’ll send <b>75% back</b> to your account — fair deal 😌</li>
-            <li><strong>🌙 6–12 hrs left:</strong> Cutting it close, but you still get <b>50%</b> back.</li>
-            <li><strong>🚨 Under 6 hrs:</strong> That’s basically takeoff time 😭 — <b>no refund</b> possible.</li>
+            <li><strong>🌙 6–12 hrs left:</strong> Only <b>25% refund</b> available, plan better next time!</li>
+            <li><strong>🚫 6 hrs or less:</strong> No refund, but you can reschedule for a fee.</li>
         </ul>
-        <p style="margin-top:12px; font-size:0.95rem; color:#444;">
-            💡 Tip: If plans change, cancel early — more refund for you, less stress for us. Win-win 💛
-        </p>
     </div>
     """, unsafe_allow_html=True)
-
 
         # Confirm / Modify
         colc1, colc2 = st.columns(2)
@@ -771,6 +897,7 @@ def booking_page():
                     'from_city': from_city,
                     'to_city': to_city,
                     'date': str(travel_date),
+                    'departure_time': departure_time,
                     'passengers': passengers,
                     'seats': sorted(st.session_state.selected_seats),
                     'bus_type': bus_type,
@@ -779,14 +906,18 @@ def booking_page():
                     'bus_number': bus_number,
                     'driver_number': driver_number,
                     'payment_mode': 'Cash on Boarding',
-                    'booking_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    'booking_time': datetime.now().strftime('%H:%M:%S'),
+                    'status': 'confirmed'
                 }
 
+                # persist booking and send confirmation email
                 add_booking(st.session_state.username, booking_details)
-
-                users = __import__('utils.auth', fromlist=['load_users']).load_users()
-                user_email = users[st.session_state.username]['email']
-                email_result = send_confirmation_email(user_email, booking_details)
+                try:
+                    users = __import__('utils.auth', fromlist=['load_users']).load_users()
+                    user_email = users.get(st.session_state.username, {}).get('email', '')
+                    email_result = send_confirmation_email(user_email, booking_details)
+                except Exception:
+                    email_result = {'success': False, 'error': 'Email send failed (demo mode).'}
 
                 st.session_state.booking_details = booking_details
                 st.session_state.email_result = email_result
@@ -808,7 +939,6 @@ def booking_page():
 def confirmation_page():
     """Booking Confirmation Page"""
     booking = st.session_state.booking_details
-
     st.markdown("""
     <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:18px;border-radius:12px;color:white;text-align:center;">
         <h1>🎉 Booking Confirmed! 🎉</h1>
@@ -837,6 +967,8 @@ def confirmation_page():
     with col1:
         st.info(f"""
         **Booking ID:** {booking['booking_id']}
+
+        **booking Time:** {booking['booking_time']}
         
         **From:** {booking['from_city']}
         
@@ -859,6 +991,8 @@ def confirmation_page():
         **Total Amount:** ₹{booking['total_amount']}
         
         **Payment Mode:** {booking['payment_mode']}
+
+        **departure Time:** {booking.get('departure_time', 'N/A')}
         """)
 
     st.markdown("---")
@@ -869,13 +1003,16 @@ def confirmation_page():
         st.warning("⚠️ Email sending is in demo mode. In production, you'll receive a confirmation email.")
 
     st.markdown("""
-   <div style="background-color:#fff3cd;border-left:5px solid #ffc107;padding:12px;border-radius:6px;">
+   <div style="background-color:#fff3cd;
+                border-left:5px solid #ffc107;
+                padding:12px;
+                border-radius:6px;">
   <h4>🚌 Quick Ride Rules</h4>
   <ul>
-    <li>Arrive <strong>15 mins early</strong></li>
-    <li>Carry your <strong>ID</strong></li>
-    <li><strong>Cash-only</strong> payment at bus</li>
-    <li>Your <strong>Booking ID</strong> = your ticket</li>
+    <li>⏰ Roll up <strong>15 mins early</strong>- no FOMO!</li>
+    <li>🆔Don't forget your <strong>ID</strong>-gotta keep it 100.</li>
+    <li><strong>💸 Cash-only</strong> payment at bus</li>
+    <li>Your <strong>Booking ID</strong> = your ticket,keep it safe! 🔒</li>
   </ul>
 </div>
     """, unsafe_allow_html=True)
@@ -897,6 +1034,8 @@ def confirmation_page():
             st.rerun()
 
 
+
+
 def main():
     if not st.session_state.logged_in:
         login_page()
@@ -907,6 +1046,10 @@ def main():
             booking_page()
         elif st.session_state.page == 'confirmation':
             confirmation_page()
+
+
+
+
 
 
 if __name__ == "__main__":
